@@ -1,60 +1,65 @@
-graph TD
+flowchart TD
   subgraph Client
-    C1[웹 브라우저<br/>React/Vite 기반 UI]
-    C2[모바일 웹<br/>반응형 지원]
+    A1[Web Client (PC/Mobile)]
+    A2[Admin Dashboard]
   end
 
-  subgraph Frontend
-    FE[Next.js/React<br/>SSR/CSR 지원]
-    FE -->|REST API| API[API Gateway (/api/v1)]
+  subgraph CDN
+    CF[CloudFront]
   end
 
-  C1 --> FE
-  C2 --> FE
-
-  subgraph Backend
-    API --> S1[Auth 서비스<br/>JWT, OAuth, 2FA]
-    API --> S2[게시글 서비스<br/>작성/조회/수정/삭제]
-    API --> S3[댓글/추천/신고 서비스]
-    API --> S4[검색/정렬 서비스]
-    API --> S5[휴지통 서비스]
-    API --> S6[카테고리 서비스]
-    API --> ADM[관리자 서비스<br/>대시보드/정책 관리]
+  subgraph Web_Tier
+    EC1[EC2 - Web/App Server]
+    EC2[EC2 - Web/App Server]
   end
 
-  subgraph Infra
-    DB[(MySQL 8.0<br/>이중화 RDS)]
-    Cache[Redis / Memcached<br/>임시 저장/세션/인기글 캐시]
-    MQ[SQS<br/>비동기 처리 (신고/알림)]
-    Media[S3 저장소<br/>+ CloudFront CDN]
-    AuthLog[(AuditLog DB)]
-    Xray[AWS X-Ray<br/>Trace 추적]
-    Prometheus[Prometheus + Grafana<br/>모니터링/알림]
+  subgraph API
+    API[RESTful API\n(JWT + RBAC + OAuth2)]
   end
 
-  subgraph DevOps
-    CI[GitHub Actions<br/>테스트/빌드/배포]
-    Docker[Docker + ECS or EKS]
-    Rollout[Blue/Green 배포 or 롤링 업데이트]
+  subgraph DB
+    DB1[(MySQL Master - RDS)]
+    DB2[(MySQL Read Replica)]
   end
 
-  S1 --> DB
-  S2 --> DB
-  S3 --> DB
-  S4 --> DB
-  S5 --> DB
-  S6 --> DB
-  ADM --> DB
-  API --> Cache
-  S2 --> Media
-  S3 --> MQ
-  MQ --> S3
-  API --> AuthLog
-  API --> Xray
-  DB --> Prometheus
-  Media --> Prometheus
+  subgraph Media
+    S3[(S3 Bucket - 이미지/영상 저장)]
+  end
 
-  CI --> Docker
-  Docker --> FE
-  Docker --> API
-  Rollout --> Docker
+  subgraph Monitoring
+    MON1[Prometheus]
+    MON2[Grafana]
+    MON3[OpenSearch + Kibana]
+    MON4[AWS X-Ray]
+  end
+
+  subgraph Security
+    WAF[Web Application Firewall]
+    SSL[HTTPS (TLS 1.3)]
+    AUTH[2FA + OAuth2 + JWT]
+  end
+
+  A1 -->|HTTPS| CF
+  A2 -->|HTTPS + 2FA| CF
+
+  CF --> WAF
+  WAF --> EC1
+  WAF --> EC2
+
+  EC1 --> API
+  EC2 --> API
+
+  API -->|Read/Write| DB1
+  API -->|Read| DB2
+  API --> S3
+
+  API -->|Metrics| MON1
+  API -->|Trace| MON4
+  EC1 --> MON3
+  DB1 --> MON3
+
+  MON1 --> MON2
+  MON3 --> MON2
+
+  click API href "https://swagger-ui.example.com" "Swagger API Docs"
+
