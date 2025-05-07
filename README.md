@@ -1,9 +1,3 @@
-# 시스템 아키텍처 다이어그램
-
-다음은 전체 시스템 아키텍처를 표현한 Mermaid 다이어그램입니다:
-
-> 💡 GitHub에서는 Mermaid 미리보기가 보이지 않을 수 있습니다. 확인하려면 [Mermaid Live Editor](https://mermaid.live) 또는 [Obsidian](https://obsidian.md) 같은 툴을 사용하세요.
-
 ```mermaid
 flowchart TD
   subgraph Client
@@ -21,7 +15,7 @@ flowchart TD
   end
 
   subgraph API
-    API[RESTful API\n(JWT + RBAC + OAuth2)]
+    API[RESTful API<br/>(JWT + RBAC + OAuth2)]
   end
 
   subgraph DB
